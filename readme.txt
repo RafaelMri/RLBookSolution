@@ -1,1 +1,1 @@
-This is a collection of solution to “Reinforcement Learning: An Introduction” 2nd Edition by Richard S. Sutton and Andrew G.Barto
+This is a collection of my worked out exercises of “Reinforcement Learning: An Introduction” 2nd Edition by Richard S. Sutton and Andrew G.Barto
