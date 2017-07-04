@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    Description: This script aims to reconstruct Fig. 6.4 of [Sutton and Barto, 2016]
+    Description: This script aims to reconstruct exercise 6.7 of [Sutton and Barto, 2016]
     Author: Tianlin Liu
     Date created: 7/3/2017
     Date last modified: 7/3/2017
@@ -18,7 +18,7 @@ DIM_Y = 7
 DIM_X = 10
 
 # number of actions
-Actions = np.array([[-1,0],[1,0],[0,1],[0,-1]]) # up, down, right, and left.
+Actions = np.array([[-1,0],[1,0],[0,1],[0,-1],[-1,1],[1,1],[1,-1],[-1,-1]]) # up, down, right, left, up-right, down-right, down-left, up-left.
 DIM_ACTIONS = len(Actions)
 
 # Initialize the Wind Matrix
@@ -99,7 +99,7 @@ def GenActionFromSoftPolicy(State, Q, EPSILON):
 
 
 # The number of episodes in the traning 
-EPISODE_NUMBER = 170
+EPISODE_NUMBER = 300
 
 
   
@@ -150,7 +150,7 @@ State = STARTING_STATE
 ActionIndex = GenActionFromSoftPolicy(State, Q, 0)  
 ChosenAction = Actions[ActionIndex]    
 
-MovesString = np.array(['up', 'down', 'right', 'left'])      
+MovesString = np.array(['up', 'down', 'right', 'left', 'up-right', 'down-right', 'down-left', 'up-left'])      
 
 OptStatesAndMoves = [STARTING_STATE,MovesString[ActionIndex]]
 

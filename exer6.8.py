@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    Description: This script aims to reconstruct Fig. 6.4 of [Sutton and Barto, 2016]
+    Description: This script aims to reconstruct exercise 6.7 of [Sutton and Barto, 2016]
     Author: Tianlin Liu
     Date created: 7/3/2017
     Date last modified: 7/3/2017
@@ -18,13 +18,21 @@ DIM_Y = 7
 DIM_X = 10
 
 # number of actions
-Actions = np.array([[-1,0],[1,0],[0,1],[0,-1]]) # up, down, right, and left.
+Actions = np.array([[-1,0],[1,0],[0,1],[0,-1],[-1,1],[1,1],[1,-1],[-1,-1]]) # up, down, right, left, up-right, down-right, down-left, up-left.
 DIM_ACTIONS = len(Actions)
 
 # Initialize the Wind Matrix
 WindMatrix = np.zeros((DIM_Y,DIM_X))
 WindMatrix[:,[3,4,5,8]] = np.ones((DIM_Y,4))
 WindMatrix[:,[6,7]] = 2*np.ones((DIM_Y,2))
+
+def StochasticWind(State):
+    
+    StochasticWindOnState = int(WindMatrix[State[0],State[1]] + np.random.choice([1,-1,0]))
+    
+    return StochasticWindOnState
+
+
 
 # The starting coordinate in the grid world
 STARTING_STATE = np.array([3,0])
@@ -54,7 +62,9 @@ def GenNextStateAndReward(State, Move):
     NextStateNoWind[0] = min(6,max(0, NextStateTrial[0]))        
     NextStateNoWind[1] = min(9,max(0, NextStateTrial[1]))
 
-    NextStateAfterWindTrial = [int(NextStateNoWind[0] - WindMatrix[NextStateNoWind[0],NextStateNoWind[1]]),NextStateNoWind[1]]
+    StochasticWindOnState =  StochasticWind(NextStateNoWind)
+    
+    NextStateAfterWindTrial = [int(NextStateNoWind[0] - StochasticWindOnState),NextStateNoWind[1]]
     
     NextStateAfterWind[0] = min(6,max(0, NextStateAfterWindTrial[0]))        
     NextStateAfterWind[1] = min(9,max(0, NextStateAfterWindTrial[1]))
@@ -99,7 +109,7 @@ def GenActionFromSoftPolicy(State, Q, EPSILON):
 
 
 # The number of episodes in the traning 
-EPISODE_NUMBER = 170
+EPISODE_NUMBER = 1000
 
 
   
@@ -150,7 +160,7 @@ State = STARTING_STATE
 ActionIndex = GenActionFromSoftPolicy(State, Q, 0)  
 ChosenAction = Actions[ActionIndex]    
 
-MovesString = np.array(['up', 'down', 'right', 'left'])      
+MovesString = np.array(['up', 'down', 'right', 'left', 'up-right', 'down-right', 'down-left', 'up-left'])      
 
 OptStatesAndMoves = [STARTING_STATE,MovesString[ActionIndex]]
 
