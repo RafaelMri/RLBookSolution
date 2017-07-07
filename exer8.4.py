@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    Description: This script aims to reconstruct Fig. 6.4 of [Sutton and Barto, 2016]
+    Description: This script aims to solve exercise 8.4 of [Sutton and Barto, 2016]
     Author: Tianlin Liu
     Date created: 7/5/2017
     Date last modified: 7/6/2017
@@ -102,7 +102,6 @@ def ModelDynaPlus(AllStates, State, ActionIndex, TimeSpanNotVisited, KAPPA):
     if (NextStateGW == TERMINAL_STATE):
         Reward = 1
     else:
-        #Reward = min( -0.01 + int(ActionIndex != 1)*(KAPPA*np.sqrt(TimeSpanNotVisited)), 0.001)
         Reward =  -0.01 + int(ActionIndex != 1)*(KAPPA*np.sqrt(TimeSpanNotVisited))
         
     return NextStateGW, Reward      
@@ -136,6 +135,20 @@ def GenActionFromSoftPolicy(State, Q, EPSILON):
     ActionDistVector[GreedyActionIndex] += 1 - EPSILON
     # ActionDistVector[1] = 0
     # ActionDistVector = np.array(ActionDistVector)/sum(np.array(ActionDistVector))
+    
+    ActionIndex = np.random.choice(np.arange(0, DIM_ACTIONS), p=ActionDistVector)
+    
+    return ActionIndex
+    
+KAPPA2 = 0.0009
+def GenActionFromSoftPolicyExtraReward(State, Q, EPSILON, VecTimeSpanNotVisited ):
+    print VecTimeSpanNotVisited
+    VecExtraReward = np.array(Q[State[0],State[1],:]) + KAPPA2*np.sqrt(np.array(VecTimeSpanNotVisited))
+        
+    GreedyActionIndex = randargmax(VecExtraReward)
+    
+    ActionDistVector = ((EPSILON/float(DIM_ACTIONS))*np.ones(DIM_ACTIONS))
+    ActionDistVector[GreedyActionIndex] += 1 - EPSILON
     
     ActionIndex = np.random.choice(np.arange(0, DIM_ACTIONS), p=ActionDistVector)
     
@@ -245,6 +258,7 @@ for EpiNr in range(EPISODE_NUMBER):
     
     
     while True:
+        
         ActionIndex = GenActionFromSoftPolicy(State, Q, EPSILON)
         TimeStep += 1
                  
@@ -265,7 +279,7 @@ for EpiNr in range(EPISODE_NUMBER):
         
         NextState, Reward = ModelDynaPlus(AllStates, State, ActionIndex, TimeSpanNotVisited , KAPPA)
 
-        print TimeSpanNotVisited, Reward
+        # print TimeSpanNotVisited, Reward
 
                 
         CumReward += Reward
@@ -303,48 +317,120 @@ for EpiNr in range(EPISODE_NUMBER):
 
 
 
-                        
+
+'''
+Suppose extra reward is used not in backups, but solely in the action selection
+'''                        
+
+# Initialize the Q values
+Q = np.zeros((DIM_Y,DIM_X,DIM_ACTIONS))
+
+# Initialize a Policy Matrix. 
+EpsilonGreedyPolicy = np.zeros((DIM_Y,DIM_X,DIM_ACTIONS))
+
+
+# Initialize the episode number
+EpiNr = 0
+State = STARTING_STATE
+TimeStep = 0
+CumReward = 0 
+CumRewardListDynaQPlusActionSelection = []
+breaking = False
+LatestVisitTimeStep = np.zeros(DIM_ACTIONS)        
+
+
+for EpiNr in range(EPISODE_NUMBER):
+    PrevObsStatesAndAction = []
+    State = STARTING_STATE
+    
+    
+    
+    while True:
+        VecTimeSpanNotVisited = np.array([TimeStep, TimeStep, TimeStep]) - LatestVisitTimeStep
+        ActionIndex = GenActionFromSoftPolicyExtraReward(State, Q, EPSILON, VecTimeSpanNotVisited)
+        
+        TimeStep += 1
+                 
+            
+        ChosenAction = Actions[ActionIndex]
+        PrevObsStatesAndAction.append([State,ActionIndex])
+
+        
+        if (TimeStep <= 3000):
+            AllStates = StatesNoShortCut
+        else:
+            AllStates = StatesShortCut
+        
+        
+        
+        #print LatestVisitTimeStep,  TimeStep, ActionIndex
+        
+        NextState, Reward = ModelDyna(AllStates, State, ActionIndex)
+
+        # print TimeSpanNotVisited, Reward
+
+                
+        CumReward += Reward
+        CumRewardListDynaQPlusActionSelection.append(CumReward)                
+        
+        LatestVisitTimeStep[ActionIndex] =  TimeStep          
+
+                
+        if TimeStep > STEPS_NUMBER:        
+            breaking = True
+            break
+            
+        if NextState == [0,8]:
+            break
+        
+                
+        Q[State[0],State[1],ActionIndex] += ALPHA*(Reward + GAMMA* max(Q[NextState[0], NextState[1], :]) -  Q[State[0],State[1],ActionIndex])
+         
+        for PlanningSteps in range(MODEL_PLANNING_NUMBER):
+            random_index = random.randrange(0,len(PrevObsStatesAndAction))
+            RandPrevState, RandPrevActionIndex = PrevObsStatesAndAction[random_index]
+            
+            
+            SimulateNextState, SimulateReward = ModelDynaPlus(AllStates,RandPrevState,RandPrevActionIndex, TimeSpanNotVisited, KAPPA)
+            Q[State[0],State[1],ActionIndex] += ALPHA*(Reward + GAMMA* max(Q[NextState[0], NextState[1], :]) -  Q[State[0],State[1],ActionIndex])
+            
+            
+        
+        State = NextState
+        
+    if breaking:
+        break
+        
+        # print State, ChosenAction, EpiNr, TimeStep
+
+
+
+
+
+
+                                                                                                
                                                 
                                                                         
                                                                                                                         
 
 # plt.plot(range(TimeStep), CumRewardListDynaQ, 'k')
-plt.plot(range(TimeStep), CumRewardListDynaQ, 'k', range(TimeStep), CumRewardListDynaQPlus, 'r')
+
+line1,= plt.plot(range(TimeStep), CumRewardListDynaQ, 'k',label="DynaQ")
+line2,= plt.plot(range(TimeStep), CumRewardListDynaQPlus, 'r',label="DynaQ+")
+line3,= plt.plot(range(TimeStep), CumRewardListDynaQPlusActionSelection, 'b',label="DynaQ+ with extra reward only on action selection")
+
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+           ncol=2, mode="expand", borderaxespad=0.)
+plt.title('Tabular Dyna-Q and Tabular Dyna-Q+ applied on Shortcut maze')
+
 
 plt.xlabel('Time Steps')
 plt.ylabel('Episodes')
-plt.title('Tabular Dyna-Q and Tabular Dyna-Q+ applied on Shortcut maze')
 plt.show()
 
          
                 
                 
-PrevObsStatesAndAction = []
-State = STARTING_STATE
-CumReward = 0
-AllStates = StatesShortCut
-TimeStep = 0   
-    
-while True:
-    ActionIndex = GenActionFromSoftPolicy(State, Q, 0)
-    TimeStep += 1
-                 
-            
-    ChosenAction = Actions[ActionIndex]
-    PrevObsStatesAndAction.append([State,ActionIndex])
-                
-    NextState, Reward = ModelDynaPlus(AllStates, State, ActionIndex, TimeSpanNotVisited , KAPPA)
-     
-    print NextState     
-    State = NextState
-                    
-    if State == [0,8]:
-        break
-                 
-        
-    
-print PrevObsStatesAndAction
-        
 
 
             
