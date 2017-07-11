@@ -1389,6 +1389,61 @@ Please see \texttt{exer8.4.py}.
 
 
 
+\section{On-Policy Prediction wIth Approximation}
+
+
+\begin{exer}
+Why does (9.17) define $(N + 1)^d$ distinct functions for dimension $d$?
+\end{exer}
+
+\begin{shaded}
+\begin{solution} 
+We need to count how many different $s_1^{n_1} ... s_d^{n_d}$ are there, where $n_d$ is chosen from $\{0, \cdots, N\}$. There are $(N+1)$ way to choose an $n_i$, and we ought to choose $n_i$ for $d$ times. Hence there are $(N + 1)^d$ distinct ones.
+\end{solution} 
+\end{shaded}
+
+
+\begin{exer}
+Give $N$ and the $c_{i,j}$ defining the basis functions that produce featurevectors $(1, s_1, s_2, s_1s_2, s_1^2, s_2^2, s_1s_2^2, s_1^2s_2, s_1^2s_2^2)^T$.
+\end{exer}
+
+\begin{shaded}
+\begin{solution} 
+The basis functions are defined as
+
+\[ \phi_i(s) \coloneqq s_1^{c_i,1} s_2^{c_i,2}\]
+
+for $(1, s_1, s_2, s_1s_2, s_1^2, s_2^2, s_1s_2^2, s_1^2s_2, s_1^2s_2^2)^T$, where $\{c_{i,1}, c_{i,2}\}$ for $i$ from 1 to $d$ is defined as
+\[ \{0,0\}, \{1,0\}, \{0,1\}, \{2,0\}, \{0,2\}, \{1,2\}, \{2,1\}, \{2,2\}\]
+ respectively.
+
+\end{solution} 
+\end{shaded}
+
+
+\begin{exer}
+Why does (9.18) define $(N + 1)^d$ distinct functions for dimension $d$?
+\end{exer}
+
+\begin{shaded}
+\begin{solution} 
+In the exactly the same fashion as that of the previous problem, we count how many such functions are there. There are (N+1) ways to choose $c_j^i$ and we ought to choose $c_j^i$ for $d$ times. Hence there are $(N+1)^d$ numbers of such functions.
+
+\end{solution} 
+\end{shaded}
+
+\begin{exer}
+Suppose we believe that one of two state dimensions is more likely to have an e?ect on the value function than is the other, that generalization should be primarily across this dimension rather than along it. What kind of tilings could be used to take advantage of this prior knowledge?
+\end{exer}
+
+\begin{shaded}
+\begin{solution} 
+
+
+\end{solution} 
+\end{shaded}
+
+
 
 
 
